@@ -1,17 +1,27 @@
 function Hero() {
   return (
-    <section className="text-center py-32">
-      <h1 className="text-5xl font-bold mb-4">
+    <section
+      id="home"
+      className="min-h-screen flex flex-col justify-center items-center text-center px-6 bg-gradient-to-r from-slate-900 to-blue-900 text-white"
+    >
+      <h1 className="text-5xl md:text-7xl font-bold mb-6">
         Blue Swan Lake Studios
       </h1>
 
-      <p className="text-gray-600">
-        Blue Swan Lake Studios is a creative agency specializing in web design, development, and digital marketing. We help businesses establish a strong online presence and achieve their goals through innovative solutions and exceptional service.
+      <p className="max-w-3xl text-lg md:text-xl mb-8">
+        We build modern websites, digital experiences,
+        and marketing solutions that help businesses grow.
       </p>
 
-      <button className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-lg">
-        Learn More
-      </button>
+      <div className="flex gap-4 flex-wrap justify-center">
+        <button className="bg-blue-500 px-6 py-3 rounded-lg hover:scale-105 transition">
+          Get Started
+        </button>
+
+        <button className="border px-6 py-3 rounded-lg hover:bg-white hover:text-black transition">
+          Learn More
+        </button>
+      </div>
     </section>
   );
 }
