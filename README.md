@@ -1,6 +1,6 @@
 # Blue Swan Lake Studios 
 
-This repository hosts the codebase for Blue Swan Lake Studios, a creative agency website built with React and Vite, featuring an animated SVG swan logo with GSAP animations.
+This repository hosts the codebase for Blue Swan Lake Studios, a creative agency website.
 
 ## Get Started with React + Vite
 
