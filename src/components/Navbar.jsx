@@ -11,9 +11,9 @@ function Navbar() {
       </div>
 
       <ul className="flex gap-6">
-        <li>Home</li>
-        <li>About</li>
-        <li>Contact</li>
+        <li><a href="#home" className="hover:text-blue-400 transition-colors">Home</a></li>
+        <li><a href="#about" className="hover:text-blue-400 transition-colors">About</a></li>
+        <li><a href="#contact" className="hover:text-blue-400 transition-colors">Contact</a></li>
       </ul>
     </nav>
   );
