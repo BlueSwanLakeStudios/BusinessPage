@@ -6,8 +6,8 @@ function App() {
   return (
     <>
       <Navbar />
-      <Hero />
       <SwanAnimation />
+      <Hero />
     </>
   );
 }
