@@ -1,13 +1,19 @@
 import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import SwanAnimation from "./components/SwanAnimation";
+import HeroSection from "./components/HeroSection";
+import Services from "./components/Services";
+import Testimonials from "./components/Testimonials";
+import Contact from "./components/Contact";
+import Footer from "./components/Footer";
 
 function App() {
   return (
     <>
       <Navbar />
-      <SwanAnimation />
-      <Hero />
+      <HeroSection />
+      <Services />
+      <Testimonials />
+      <Contact />
+      <Footer />
     </>
   );
 }
