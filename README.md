@@ -25,15 +25,20 @@ npm run build
 ## Project Structure
 
 ```
-internship-website/
+BusinessPage/
 ├── public/
-│   └── favicon.svg        # Animated swan favicon for browser tab
+│   |── favicon.svg              # Animated swan favicon for browser tab
+|   |---
 ├── src/
-│   ├── assets/            # Static assets
+│   ├── assets/                  # Static assets
 │   ├── components/
-│   │   ├── Navbar.jsx     # Navigation bar with animated swan logo
-│   │   ├── Hero.jsx       # Hero section
-│   │   └── SwanLogo.jsx   # Animated SVG swan logo component
+│   │   ├── Navbar.jsx           # Navigation bar with animated swan logo
+│   │   ├── HeroSection.jsx      # Hero section (text left, swan animation right)
+│   │   ├── SwanAnimation.jsx    # Animated SVG swan on lotus lake (GSAP)
+│   │   ├── Services.jsx         # Services section (3 cards)
+│   │   ├── Testimonials.jsx     # Client testimonials (3 quotes)
+│   │   ├── Contact.jsx          # Contact form
+│   │   └── Footer.jsx           # Footer with nav links and contact info
 │   ├── App.jsx
 │   ├── App.css
 │   └── main.jsx
