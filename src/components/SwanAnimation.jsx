@@ -29,6 +29,13 @@ function SwanAnimation({ inline = false }) {
     gsap.to(svg.querySelector("#wing"), { rotation: -3, scaleY: 1.025, svgOrigin: "520 700", duration: 0.45, ease: "power2.out" });
   }, [setState]);
 
+  // Flap direction is reversed here by mirroring the raised-wing shape itself
+  // (scaleX: -1 about its pivot) instead of just flipping the sign of its
+  // rotation values. Negating rotation alone left the *same* lopsided wing
+  // silhouette swinging the wrong way and it clipped weirdly across the
+  // neck. Mirroring the shape means the wing now sweeps up on the opposite
+  // (head-facing) side with the correct silhouette, while the rotation
+  // wobble and the swan's body bob keep their original timing/easing.
   const flap = useCallback(() => {
     if (stateRef.current === "flap") return;
     setState("flap");
@@ -39,14 +46,19 @@ function SwanAnimation({ inline = false }) {
     const swan = svg.querySelector("#swan");
     const tl = gsap.timeline({
       onComplete: () => {
-        gsap.set(raisedWing, { opacity: 0, rotation: 0, scale: 1 });
+        gsap.set(raisedWing, { opacity: 0, rotation: 0, scaleX: 1, scaleY: 1 });
         gsap.set(wing, { opacity: 1 });
         idle();
       },
     });
     tl.to(wing, { opacity: 0, duration: 0.12 }, 0)
-      .fromTo(raisedWing, { opacity: 0, rotation: 18, scale: 0.82, svgOrigin: "500 710" }, { opacity: 1, rotation: -10, scale: 1, svgOrigin: "500 710", duration: 0.28, ease: "back.out(1.6)" }, 0.08)
-      .to(raisedWing, { rotation: 16, svgOrigin: "500 710", duration: 0.18, ease: "power2.in" })
+      .fromTo(
+        raisedWing,
+        { opacity: 0, rotation: 18, scaleX: -0.82, scaleY: 0.82, svgOrigin: "500 710" },
+        { opacity: 1, rotation: -10, scaleX: -1, scaleY: 1, svgOrigin: "500 710", duration: 0.28, ease: "back.out(1.6)" },
+        0.08
+      )
+      .to(raisedWing, { rotation: -16, svgOrigin: "500 710", duration: 0.18, ease: "power2.in" })
       .to(swan, { y: 6, duration: 0.18, ease: "power2.in" }, "<")
       .to(raisedWing, { rotation: -13, svgOrigin: "500 710", duration: 0.22, ease: "power2.out" })
       .to(swan, { y: -14, duration: 0.22, ease: "power2.out" }, "<")
@@ -55,7 +67,7 @@ function SwanAnimation({ inline = false }) {
       .to(raisedWing, { rotation: -4, svgOrigin: "500 710", duration: 0.18, ease: "power2.out" })
       .to(swan, { y: -8, duration: 0.18, ease: "power2.out" }, "<")
       .to({}, { duration: 0.16 })
-      .to(raisedWing, { opacity: 0, rotation: 18, scale: 0.84, svgOrigin: "500 710", duration: 0.24, ease: "power2.in" })
+      .to(raisedWing, { opacity: 0, rotation: 18, scaleX: -0.84, scaleY: 0.84, svgOrigin: "500 710", duration: 0.24, ease: "power2.in" })
       .to(wing, { opacity: 1, duration: 0.18 }, "<0.08");
   }, [setState, idle]);
 
@@ -119,7 +131,7 @@ function SwanAnimation({ inline = false }) {
             <stop offset="0%" stopColor="#52b5ff" /><stop offset="100%" stopColor="#053b9c" />
           </linearGradient>
           <linearGradient id="beakBlue" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#9ed6ff" /><stop offset="65%" stopColor="#3f9bff" /><stop offset="100%" stopColor="#0d5fd0" />
+            <stop offset="0%" stopColor="#9ed6ff" /><stop offset="60%" stopColor="#4aa3ff" /><stop offset="100%" stopColor="#0962dd" />
           </linearGradient>
           <clipPath id="circle-clip"><circle cx="500" cy="500" r="468" /></clipPath>
           <g id="pad">
@@ -135,9 +147,6 @@ function SwanAnimation({ inline = false }) {
             <path d="M0 -6 Q-13 -36 0 -64 Q13 -36 0 -6 Z" fill="#F8BBD0" />
             <path d="M0 -12 Q-6 -34 0 -56 Q6 -34 0 -12 Z" fill="#FCE4EC" />
           </g>
-          <clipPath id="beakClip">
-            <path d="M735 224 C785 234 850 268 898 304 C910 313 903 325 888 322 C829 310 771 286 720 263 C711 248 716 231 735 224 Z" />
-          </clipPath>
         </defs>
         <g clipPath="url(#circle-clip)">
           <rect x="32" y="32" width="936" height="936" fill="url(#sky)" />
@@ -211,24 +220,15 @@ function SwanAnimation({ inline = false }) {
                       <path d="M703 735 L770 787 L720 823 L685 805 Z" fill="#064ab2" opacity="0.50" />
                     </g>
                     <path d="M594 251 C606 164 684 126 746 151 C791 169 812 213 801 257 C779 232 745 213 708 201 C662 186 624 201 594 251 Z" fill="#b5e5ff" opacity="0.28" />
-                    <g id="beak">
-                      <path d="M735 224 C785 234 850 268 898 304 C910 313 903 325 888 322 C829 310 771 286 720 263 C711 248 716 231 735 224 Z" fill="url(#beakBlue)" />
-                      <g clipPath="url(#beakClip)">
-                        <polygon points="728,231 802,243 800,265 721,250" fill="#bfe4ff" opacity="0.9" />
-                        <polygon points="802,243 861,261 859,287 800,265" fill="#8fcaff" opacity="0.85" />
-                        <polygon points="861,261 900,303 897,313 859,287" fill="#5fb0ff" opacity="0.9" />
-                        <polygon points="721,250 800,265 800,286 719,263" fill="#2f8ff0" opacity="0.9" />
-                        <polygon points="800,265 859,287 859,308 800,286" fill="#1c74dc" opacity="0.9" />
-                        <polygon points="859,287 897,313 889,322 859,308" fill="#0d52b8" opacity="0.92" />
-                        <polyline points="721,250 800,265 859,287 897,313" fill="none" stroke="#0b4fae" strokeWidth="2" opacity="0.55" />
-                      </g>
-                      <path d="M735 224 C785 234 850 268 898 304 C910 313 903 325 888 322 C829 310 771 286 720 263 C711 248 716 231 735 224 Z" fill="none" stroke="#0a1b34" strokeWidth="4" strokeLinejoin="round" />
-                      <path d="M884 306 C902 309 908 318 892 322 C895 316 893 311 884 306 Z" fill="#0a1b34" opacity="0.8" />
-                      <ellipse cx="803" cy="262" rx="7" ry="4" transform="rotate(28 803 262)" fill="#071427" />
+                    <g id="beak" transform="translate(20 -6)">
+                      <path d="M700,205 Q784,214 858,266 Q862,270 856,272 Q778,238 696,230 Q692,216 700,205 Z" fill="url(#beakBlue)" />
+                      <path d="M700,205 Q784,214 858,266 Q862,270 856,272 Q778,238 696,230 Q692,216 700,205 Z" fill="none" stroke="#0a1b34" strokeWidth="3.5" strokeLinejoin="round" />
+                      <path d="M706,209 Q790,220 850,265" fill="none" stroke="#eafbff" strokeWidth="2" opacity="0.5" strokeLinecap="round" />
                     </g>
-                    <path d="M718 207 C745 209 768 222 744 240 C734 247 726 252 720 258 C712 250 704 242 700 232 C695 218 702 206 718 207 Z" fill="#101820" />
-                    <circle cx="724" cy="207" r="8.5" fill="#07090e" />
-                    <circle cx="720" cy="203" r="2.8" fill="#ffffff" opacity="0.95" />
+
+                    {/* Eye */}
+                    <ellipse cx="720" cy="190" rx="16" ry="15" fill="#07090e" />
+                    <circle cx="720" cy="190" r="4" fill="#ffffff" opacity="0.95" />
                   </g>
                 </g>
               </g>
