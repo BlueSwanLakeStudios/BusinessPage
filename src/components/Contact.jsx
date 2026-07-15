@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 const SCRIPT_URL =
-  "PASTE_YOUR_GOOGLE_APPS_SCRIPT_EXEC_URL_HERE";
+  "https://script.google.com/macros/s/AKfycbx4AqLhH011Svtbe8nLSu_tWtbE-pq2MqUmyEOLsNuPlE2eillBEIU1zIrczqhPs5RU/exec";
 
 function Contact() {
   const [name, setName] = useState("");
