@@ -1,12 +1,15 @@
+```jsx
 import { useState } from "react";
 
-import { useState } from "react";
+const SCRIPT_URL =
+  "PASTE_YOUR_GOOGLE_APPS_SCRIPT_EXEC_URL_HERE";
 
 function Contact() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("idle");
 
   const inputStyle = {
     width: "100%",
@@ -32,6 +35,41 @@ function Contact() {
 
   const fieldStyle = {
     marginBottom: "1.25rem",
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (status === "sending") {
+      return;
+    }
+
+    if (SCRIPT_URL.includes("PASTE_YOUR")) {
+      setStatus("error");
+      return;
+    }
+
+    setStatus("sending");
+
+    const formData = new FormData(event.currentTarget);
+    const requestBody = new URLSearchParams(formData);
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body: requestBody,
+      });
+
+      setName("");
+      setEmail("");
+      setSubject("");
+      setMessage("");
+      setStatus("success");
+    } catch (error) {
+      console.error("Contact form submission failed:", error);
+      setStatus("error");
+    }
   };
 
   return (
@@ -80,25 +118,16 @@ function Contact() {
       </p>
 
       <form
-        action="https://formsubmit.co/arsrocz@gmail.com"
-        method="POST"
+        onSubmit={handleSubmit}
         style={{ maxWidth: 560 }}
       >
-        {/* Email configuration */}
-        <input
-          type="hidden"
-          name="_subject"
-          value="New enquiry from Blue Swan Lake Studios"
-        />
-
-        <input type="hidden" name="_template" value="table" />
-
-        {/* Spam-protection field */}
+        {/* Honeypot field for basic spam protection */}
         <input
           type="text"
-          name="_honey"
+          name="website"
           tabIndex="-1"
           autoComplete="off"
+          aria-hidden="true"
           style={{ display: "none" }}
         />
 
@@ -165,13 +194,17 @@ function Contact() {
             onChange={(event) => setMessage(event.target.value)}
             placeholder="Tell us about your project..."
             rows={5}
-            style={{ ...inputStyle, resize: "vertical" }}
+            style={{
+              ...inputStyle,
+              resize: "vertical",
+            }}
             required
           />
         </div>
 
         <button
           type="submit"
+          disabled={status === "sending"}
           style={{
             background: "#5fbcd3",
             color: "#071525",
@@ -180,14 +213,44 @@ function Contact() {
             fontWeight: 700,
             fontSize: "0.95rem",
             border: "none",
-            cursor: "pointer",
+            cursor:
+              status === "sending" ? "not-allowed" : "pointer",
+            opacity: status === "sending" ? 0.65 : 1,
           }}
         >
-          Send Message
+          {status === "sending" ? "Sending..." : "Send Message"}
         </button>
+
+        {status === "success" && (
+          <p
+            role="status"
+            style={{
+              color: "#7ed6a5",
+              marginTop: "1rem",
+              lineHeight: 1.6,
+            }}
+          >
+            Your message has been sent successfully.
+          </p>
+        )}
+
+        {status === "error" && (
+          <p
+            role="alert"
+            style={{
+              color: "#ff9a9a",
+              marginTop: "1rem",
+              lineHeight: 1.6,
+            }}
+          >
+            The message could not be sent. Check the Google Apps Script URL
+            and try again.
+          </p>
+        )}
       </form>
     </section>
   );
 }
 
 export default Contact;
+```
