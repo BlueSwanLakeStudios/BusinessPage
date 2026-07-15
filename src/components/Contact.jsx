@@ -1,10 +1,9 @@
-```jsx
 import { useState } from "react";
 
 const SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbx4AqLhH011Svtbe8nLSu_tWtbE-pq2MqUmyEOLsNuPlE2eillBEIU1zIrczqhPs5RU/exec";
 
-function Contact() {
+export default function Contact() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
@@ -44,21 +43,24 @@ function Contact() {
       return;
     }
 
-    if (SCRIPT_URL.includes("PASTE_YOUR")) {
-      setStatus("error");
-      return;
-    }
-
     setStatus("sending");
 
-    const formData = new FormData(event.currentTarget);
-    const requestBody = new URLSearchParams(formData);
+    const requestBody = new URLSearchParams({
+      name,
+      email,
+      subject,
+      message,
+      website: "",
+    });
 
     try {
       await fetch(SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
-        body: requestBody,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: requestBody.toString(),
       });
 
       setName("");
@@ -117,15 +119,11 @@ function Contact() {
         you within 24 hours.
       </p>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{ maxWidth: 560 }}
-      >
-        {/* Honeypot field for basic spam protection */}
+      <form onSubmit={handleSubmit} style={{ maxWidth: 560 }}>
         <input
           type="text"
           name="website"
-          tabIndex="-1"
+          tabIndex={-1}
           autoComplete="off"
           aria-hidden="true"
           style={{ display: "none" }}
@@ -213,8 +211,7 @@ function Contact() {
             fontWeight: 700,
             fontSize: "0.95rem",
             border: "none",
-            cursor:
-              status === "sending" ? "not-allowed" : "pointer",
+            cursor: status === "sending" ? "not-allowed" : "pointer",
             opacity: status === "sending" ? 0.65 : 1,
           }}
         >
@@ -243,14 +240,10 @@ function Contact() {
               lineHeight: 1.6,
             }}
           >
-            The message could not be sent. Check the Google Apps Script URL
-            and try again.
+            The message could not be sent. Please try again.
           </p>
         )}
       </form>
     </section>
   );
 }
-
-export default Contact;
-```
