@@ -130,9 +130,6 @@ function SwanAnimation({ inline = false }) {
           <linearGradient id="deepBlue" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#52b5ff" /><stop offset="100%" stopColor="#053b9c" />
           </linearGradient>
-          <linearGradient id="beakBlue" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#9ed6ff" /><stop offset="60%" stopColor="#4aa3ff" /><stop offset="100%" stopColor="#0962dd" />
-          </linearGradient>
           <clipPath id="circle-clip"><circle cx="500" cy="500" r="468" /></clipPath>
           <g id="pad">
             <path d="M0 0 L42 -9 A44 18 0 1 0 42 9 Z" fill="#66BB6A" />
@@ -220,11 +217,17 @@ function SwanAnimation({ inline = false }) {
                       <path d="M703 735 L770 787 L720 823 L685 805 Z" fill="#064ab2" opacity="0.50" />
                     </g>
                     <path d="M594 251 C606 164 684 126 746 151 C791 169 812 213 801 257 C779 232 745 213 708 201 C662 186 624 201 594 251 Z" fill="#b5e5ff" opacity="0.28" />
+
+                    {/* Logo-style black beak: same anchor point and angle as the
+                        old blue beak, just solid black with a lighter lower jaw
+                        and a thin sheen line, plus a small black face patch
+                        bridging the beak base toward the eye (like the logo). */}
                     <g id="beak" transform="translate(20 -6)">
-                      <path d="M700,205 Q784,214 858,266 Q862,270 856,272 Q778,238 696,230 Q692,216 700,205 Z" fill="url(#beakBlue)" />
-                      <path d="M700,205 Q784,214 858,266 Q862,270 856,272 Q778,238 696,230 Q692,216 700,205 Z" fill="none" stroke="#0a1b34" strokeWidth="3.5" strokeLinejoin="round" />
-                      <path d="M706,209 Q790,220 850,265" fill="none" stroke="#eafbff" strokeWidth="2" opacity="0.5" strokeLinecap="round" />
+                      <path d="M700,202 L862,262 L868,276 L852,280 L696,232 Q690,214 700,202 Z" fill="#10141c" />
+                      <path d="M696,232 L852,280 L760,268 Q722,252 696,232 Z" fill="#2b3546" />
+                      <path d="M706,208 Q788,224 848,264" fill="none" stroke="#eafbff" strokeWidth="2" opacity="0.35" strokeLinecap="round" />
                     </g>
+                    <path d="M718,198 L716,226 L756,232 L762,206 Z" fill="#10141c" />
 
                     {/* Eye */}
                     <ellipse cx="720" cy="190" rx="16" ry="15" fill="#07090e" />
