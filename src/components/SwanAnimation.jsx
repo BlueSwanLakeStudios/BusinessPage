@@ -37,18 +37,22 @@ const LOT2 =
 
 function SwanAnimation({ inline = false }) {
   const sceneRef = useRef(null);
-  const stateRef = useRef("idle");
-
   const floatTweenRef = useRef(null);
   const neckTweenRef = useRef(null);
   const headTweenRef = useRef(null);
-  const actionTimelineRef = useRef(null);
-  const flapTimelineRef = useRef(null);
+  const poseTimelineRef = useRef(null);
 
   const clipId = useId().replace(/:/g, "");
 
-  const setState = useCallback((nextState) => {
-    stateRef.current = nextState;
+  const getSwanParts = useCallback(() => {
+    const svg = sceneRef.current;
+    if (!svg) return null;
+
+    return {
+      swan: svg.querySelector("#swan-action"),
+      neck: svg.querySelector("#neck-action"),
+      head: svg.querySelector("#head-action"),
+    };
   }, []);
 
   const pauseIdleMotion = useCallback(() => {
@@ -63,340 +67,201 @@ function SwanAnimation({ inline = false }) {
     headTweenRef.current?.play();
   }, []);
 
-  const getActionParts = useCallback(() => {
-    const svg = sceneRef.current;
-    if (!svg) return null;
-
-    return {
-      svg,
-      swan: svg.querySelector("#swan-action"),
-      neck: svg.querySelector("#neck-action"),
-      head: svg.querySelector("#head-action"),
-      raisedWing: svg.querySelector("#raised-wing"),
-    };
-  }, []);
-
   const idle = useCallback(() => {
-    if (stateRef.current === "flap") return;
-
-    const parts = getActionParts();
+    const parts = getSwanParts();
     if (!parts) return;
 
-    setState("idle");
-    actionTimelineRef.current?.kill();
-
-    actionTimelineRef.current = gsap.timeline({
+    poseTimelineRef.current?.kill();
+    poseTimelineRef.current = gsap.timeline({
       defaults: {
-        duration: 0.7,
+        duration: 0.75,
         ease: "sine.out",
         overwrite: "auto",
       },
       onComplete: resumeIdleMotion,
     });
 
-    actionTimelineRef.current
+    poseTimelineRef.current
       .to(parts.swan, { y: 0 }, 0)
-      .to(
-        parts.neck,
-        {
-          rotation: 0,
-          svgOrigin: "246 714",
-        },
-        0
-      )
-      .to(
-        parts.head,
-        {
-          rotation: 0,
-          svgOrigin: "300 372",
-        },
-        0
-      );
-  }, [getActionParts, resumeIdleMotion, setState]);
+      .to(parts.neck, { rotation: 0, svgOrigin: "246 714" }, 0)
+      .to(parts.head, { rotation: 0, svgOrigin: "300 372" }, 0);
+  }, [getSwanParts, resumeIdleMotion]);
 
   const alertState = useCallback(() => {
-    if (stateRef.current === "flap") return;
-
-    const parts = getActionParts();
+    const parts = getSwanParts();
     if (!parts) return;
 
-    setState("alert");
     pauseIdleMotion();
-    actionTimelineRef.current?.kill();
-
-    actionTimelineRef.current = gsap.timeline({
+    poseTimelineRef.current?.kill();
+    poseTimelineRef.current = gsap.timeline({
       defaults: {
-        duration: 0.55,
+        duration: 0.6,
         ease: "power2.out",
         overwrite: "auto",
       },
     });
 
-    actionTimelineRef.current
-      .to(parts.swan, { y: -12 }, 0)
-      .to(
-        parts.neck,
-        {
-          rotation: 1.5,
-          svgOrigin: "246 714",
-        },
-        0
-      )
-      .to(
-        parts.head,
-        {
-          rotation: 2.5,
-          svgOrigin: "300 372",
-        },
-        0
-      );
-  }, [getActionParts, pauseIdleMotion, setState]);
-
-  const flap = useCallback(() => {
-    if (stateRef.current === "flap") return;
-
-    const parts = getActionParts();
-    if (!parts) return;
-
-    setState("flap");
-    pauseIdleMotion();
-    actionTimelineRef.current?.kill();
-    flapTimelineRef.current?.kill();
-
-    flapTimelineRef.current = gsap.timeline({
-      onComplete: () => {
-        gsap.set(parts.raisedWing, {
-          opacity: 0,
-          rotation: 0,
-          scale: 1,
-        });
-
-        // Clear the flap guard before returning to the idle pose.
-        stateRef.current = "idle";
-        idle();
-      },
-    });
-
-    flapTimelineRef.current
-      .fromTo(
-        parts.raisedWing,
-        {
-          opacity: 0,
-          rotation: -16,
-          scale: 0.85,
-          svgOrigin: "450 648",
-        },
-        {
-          opacity: 1,
-          rotation: 0,
-          scale: 1,
-          svgOrigin: "450 648",
-          duration: 0.28,
-          ease: "back.out(1.6)",
-        },
-        0
-      )
-      .to(parts.raisedWing, {
-        rotation: 13,
-        svgOrigin: "450 648",
-        duration: 0.18,
-        ease: "power2.in",
-      })
-      .to(parts.swan, { y: 4, duration: 0.18, ease: "power2.in" }, "<")
-      .to(
-        parts.head,
-        {
-          rotation: 2.5,
-          svgOrigin: "300 372",
-          duration: 0.18,
-          ease: "power2.in",
-        },
-        "<"
-      )
-      .to(parts.raisedWing, {
-        rotation: -11,
-        svgOrigin: "450 648",
-        duration: 0.22,
-        ease: "power2.out",
-      })
-      .to(parts.swan, { y: -9, duration: 0.22, ease: "power2.out" }, "<")
-      .to(
-        parts.head,
-        {
-          rotation: -3,
-          svgOrigin: "300 372",
-          duration: 0.22,
-          ease: "power2.out",
-        },
-        "<"
-      )
-      .to(parts.raisedWing, {
-        rotation: 9,
-        svgOrigin: "450 648",
-        duration: 0.2,
-        ease: "sine.inOut",
-      })
-      .to(parts.swan, { y: 2, duration: 0.2, ease: "sine.inOut" }, "<")
-      .to(
-        parts.head,
-        {
-          rotation: 2,
-          svgOrigin: "300 372",
-          duration: 0.2,
-          ease: "sine.inOut",
-        },
-        "<"
-      )
-      .to(parts.raisedWing, {
-        rotation: -3,
-        svgOrigin: "450 648",
-        duration: 0.18,
-        ease: "power2.out",
-      })
-      .to(parts.swan, { y: -5, duration: 0.18, ease: "power2.out" }, "<")
-      .to(
-        parts.head,
-        {
-          rotation: -1.2,
-          svgOrigin: "300 372",
-          duration: 0.18,
-          ease: "power2.out",
-        },
-        "<"
-      )
-      .to({}, { duration: 0.16 })
-      .to(parts.raisedWing, {
-        opacity: 0,
-        rotation: -16,
-        scale: 0.86,
-        svgOrigin: "450 648",
-        duration: 0.24,
-        ease: "power2.in",
-      });
-  }, [getActionParts, idle, pauseIdleMotion, setState]);
-
-  const handleKeyDown = useCallback(
-    (event) => {
-      if (event.key !== "Enter" && event.key !== " ") return;
-      event.preventDefault();
-      flap();
-    },
-    [flap]
-  );
+    poseTimelineRef.current
+      .to(parts.swan, { y: -9 }, 0)
+      .to(parts.neck, { rotation: 1.1, svgOrigin: "246 714" }, 0)
+      .to(parts.head, { rotation: 1.8, svgOrigin: "300 372" }, 0);
+  }, [getSwanParts, pauseIdleMotion]);
 
   useEffect(() => {
     const svg = sceneRef.current;
     if (!svg) return undefined;
 
     const context = gsap.context(() => {
+      // Gentle swan motion. The artwork remains calm and logo-like.
       floatTweenRef.current = gsap.to("#swan-idle", {
-        y: -8,
-        duration: 3.4,
+        y: -7,
+        duration: 3.8,
         ease: "sine.inOut",
         repeat: -1,
         yoyo: true,
       });
 
       neckTweenRef.current = gsap.to("#neck-idle", {
-        rotation: 0.6,
+        rotation: 0.5,
         svgOrigin: "246 714",
-        duration: 4.2,
+        duration: 4.6,
         ease: "sine.inOut",
         repeat: -1,
         yoyo: true,
       });
 
       headTweenRef.current = gsap.to("#head-idle", {
-        rotation: 1.2,
+        rotation: 1,
         svgOrigin: "300 372",
-        duration: 3.4,
+        duration: 3.9,
         ease: "sine.inOut",
         repeat: -1,
         yoyo: true,
-        delay: 0.5,
+        delay: 0.45,
       });
 
-      // Slow, low-contrast ripples keep the water alive without competing
-      // with the swan or making the scene feel mechanically animated.
-      gsap.utils.toArray(".ripple-layer").forEach((ripple, index) => {
+      // Swan ripples: slow and low contrast so they read as water, not UI.
+      gsap.utils.toArray(".swan-ripple").forEach((ripple, index) => {
         gsap.fromTo(
           ripple,
           {
-            scaleX: 0.94,
+            scaleX: 0.93,
             scaleY: 0.9,
-            opacity: 0.18,
+            opacity: 0.16,
             transformOrigin: "50% 50%",
             transformBox: "fill-box",
           },
           {
-            scaleX: 1.1,
-            scaleY: 1.04,
+            scaleX: 1.11,
+            scaleY: 1.05,
             opacity: 0,
-            duration: 5.4 + index * 0.7,
+            duration: 5.6 + index * 0.8,
             repeat: -1,
             ease: "power1.out",
-            delay: index * 1.65,
+            delay: index * 1.8,
           }
         );
       });
 
-      // The lotus cutouts now drift as complete pieces instead of bending
-      // around a fixed stem. The near flower moves slightly more than the
-      // distant flower to create a restrained sense of depth.
+      // The extracted lotus assets contain only the blossoms; their stems
+      // remain painted into the background. Keep the bottom centre locked to
+      // the stem and use a gentle bloom/sway instead of translating the flower.
+      const lotusMotion = [
+        {
+          rotation: 0.2,
+          skewX: 0.6,
+          scaleX: 1.022,
+          scaleY: 0.988,
+          duration: 3.9,
+          delay: 0,
+        },
+        {
+          rotation: -0.15,
+          skewX: -0.46,
+          scaleX: 1.017,
+          scaleY: 0.992,
+          duration: 4.7,
+          delay: -1.8,
+        },
+      ];
+
       gsap.utils.toArray(".lotus-layer").forEach((lotus, index) => {
-        const direction = index % 2 === 0 ? 1 : -1;
-        const depth = index === 0 ? 1 : 0.58;
+        const motion = lotusMotion[index] ?? lotusMotion[0];
 
         gsap.set(lotus, {
           x: 0,
           y: 0,
           rotation: 0,
-          transformOrigin: "50% 55%",
+          skewX: 0,
+          scaleX: 1,
+          scaleY: 1,
+          transformOrigin: "50% 100%",
           transformBox: "fill-box",
         });
 
         gsap.timeline({
           repeat: -1,
-          delay: -index * 1.4,
-          defaults: {
-            ease: "sine.inOut",
-          },
+          delay: motion.delay,
+          defaults: { ease: "sine.inOut" },
         })
           .to(lotus, {
-            x: 0.7 * direction * depth,
-            y: -0.75 * depth,
-            rotation: 0.12 * direction * depth,
-            duration: 4.6 + index * 0.8,
+            rotation: motion.rotation,
+            skewX: motion.skewX,
+            scaleX: motion.scaleX,
+            scaleY: motion.scaleY,
+            duration: motion.duration,
           })
           .to(lotus, {
-            x: -0.45 * direction * depth,
-            y: 0.28 * depth,
-            rotation: -0.08 * direction * depth,
-            duration: 5.2 + index * 0.9,
+            rotation: -motion.rotation * 0.82,
+            skewX: -motion.skewX * 0.82,
+            scaleX: 1.006,
+            scaleY: 1.004,
+            duration: motion.duration * 1.08,
           })
           .to(lotus, {
-            x: 0,
-            y: 0,
             rotation: 0,
-            duration: 4.8 + index * 0.75,
+            skewX: 0,
+            scaleX: 1,
+            scaleY: 1,
+            duration: motion.duration * 0.78,
           });
+      });
+
+      // Small ripples beneath the background lotuses make the floating motion
+      // readable without exaggerating the flowers themselves.
+      gsap.utils.toArray(".lotus-ripple").forEach((ripple, index) => {
+        gsap.fromTo(
+          ripple,
+          {
+            scaleX: 0.82,
+            scaleY: 0.9,
+            opacity: index === 0 ? 0.15 : 0.11,
+            transformOrigin: "50% 50%",
+            transformBox: "fill-box",
+          },
+          {
+            scaleX: 1.16,
+            scaleY: 1.04,
+            opacity: 0,
+            duration: index === 0 ? 4.8 : 5.6,
+            repeat: -1,
+            ease: "power1.out",
+            delay: index * 1.9,
+          }
+        );
       });
     }, svg);
 
-    setState("idle");
-
     return () => {
-      actionTimelineRef.current?.kill();
-      flapTimelineRef.current?.kill();
+      poseTimelineRef.current?.kill();
       context.revert();
 
       floatTweenRef.current = null;
       neckTweenRef.current = null;
       headTweenRef.current = null;
-      actionTimelineRef.current = null;
-      flapTimelineRef.current = null;
+      poseTimelineRef.current = null;
     };
-  }, [setState]);
+  }, []);
 
   const svgStage = (
     <section
@@ -413,36 +278,31 @@ function SwanAnimation({ inline = false }) {
       <svg
         ref={sceneRef}
         viewBox="0 0 1000 1000"
-        role="button"
-        tabIndex={0}
-        aria-label="Animated blue swan on a lotus lake. Click or press Enter to flap."
+        role="img"
+        aria-label="Animated blue swan floating on a lotus lake"
         style={{
           width: "100%",
           height: "100%",
           display: "block",
-          cursor: "pointer",
           userSelect: "none",
-          outline: "none",
         }}
         onMouseEnter={alertState}
         onMouseLeave={idle}
-        onFocus={alertState}
-        onBlur={idle}
-        onClick={flap}
-        onKeyDown={handleKeyDown}
       >
         <style>{`
           .lotus-layer,
-          .ripple-layer {
+          .lotus-ripple,
+          .swan-ripple {
             transform-box: fill-box;
             will-change: transform;
           }
 
           .lotus-layer {
-            transform-origin: 50% 55%;
+            transform-origin: 50% 100%;
           }
 
-          .ripple-layer {
+          .lotus-ripple,
+          .swan-ripple {
             transform-origin: 50% 50%;
           }
         `}</style>
@@ -465,14 +325,14 @@ function SwanAnimation({ inline = false }) {
               pointerEvents="none"
             >
               <ellipse
-                className="ripple-layer"
+                className="swan-ripple"
                 cx="520"
                 cy="778"
                 rx="250"
                 ry="20"
               />
               <ellipse
-                className="ripple-layer"
+                className="swan-ripple"
                 cx="515"
                 cy="789"
                 rx="160"
@@ -480,11 +340,29 @@ function SwanAnimation({ inline = false }) {
               />
             </g>
 
-            {/* Each lotus moves as one complete floating cutout. */}
             <g
-              className="lotus-layer"
+              fill="none"
+              stroke="#e9fbf4"
+              strokeWidth="1.5"
               pointerEvents="none"
             >
+              <ellipse
+                className="lotus-ripple"
+                cx="820"
+                cy="467"
+                rx="58"
+                ry="5"
+              />
+              <ellipse
+                className="lotus-ripple"
+                cx="564"
+                cy="429"
+                rx="39"
+                ry="3.5"
+              />
+            </g>
+
+            <g className="lotus-layer" pointerEvents="none">
               <image
                 href={LOT1}
                 x="732"
@@ -494,10 +372,7 @@ function SwanAnimation({ inline = false }) {
               />
             </g>
 
-            <g
-              className="lotus-layer"
-              pointerEvents="none"
-            >
+            <g className="lotus-layer" pointerEvents="none">
               <image
                 href={LOT2}
                 x="504"
@@ -507,16 +382,8 @@ function SwanAnimation({ inline = false }) {
               />
             </g>
 
-            {/* Action and idle wrappers keep their GSAP transforms separate. */}
             <g id="swan-action">
               <g id="swan-idle">
-                <g id="raised-wing" opacity="0">
-                  <path d="M430 640 L400 420 L480 620 Z" fill="#0aa0d4" />
-                  <path d="M460 630 L490 360 L530 626 Z" fill="#0090c9" />
-                  <path d="M495 630 L580 388 L580 636 Z" fill="#057abf" />
-                  <path d="M525 640 L660 440 L620 652 Z" fill="#0057a9" />
-                </g>
-
                 <g id="body">
                   <image
                     href={BODY}
