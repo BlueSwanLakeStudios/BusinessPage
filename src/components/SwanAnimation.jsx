@@ -94,6 +94,7 @@ function SwanAnimation({ inline = false }) {
       .to(raisedWing, { opacity: 0, rotation: -16, scale: 0.86, svgOrigin: "450 648", duration: 0.24, ease: "power2.in" });
   }, [setState, idle]);
 
+  
   useEffect(() => {
     const svg = sceneRef.current;
     if (!svg) return;
