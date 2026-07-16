@@ -1,1 +1,158 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap");
 @import "tailwindcss";
+
+:root {
+  --ink: #071525;
+  --water: #0a1c30;
+  --water-2: #0d2035;
+  --crest: #5fbcd3;
+  --crest-soft: #7ecfea;
+  --mist: #d4ecf5;
+  --mist-bright: #eaf6fb;
+  --line: rgba(95, 188, 211, 0.15);
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Instrument Sans", system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--mist);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+}
+
+/* ---------- shared components ---------- */
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--crest);
+  opacity: 0.85;
+  margin: 0 0 0.9rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.85rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  font-family: var(--font-body);
+  transition: transform 0.25s ease, box-shadow 0.25s ease,
+    background 0.25s ease, border-color 0.25s ease;
+}
+
+.btn-primary {
+  background: var(--crest);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(95, 188, 211, 0.28);
+}
+
+.btn-ghost {
+  border: 1.5px solid rgba(95, 188, 211, 0.4);
+  color: var(--crest-soft);
+}
+
+.btn-ghost:hover {
+  border-color: var(--crest);
+  background: rgba(95, 188, 211, 0.08);
+}
+
+.card {
+  background: rgba(95, 188, 211, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 2rem;
+  transition: transform 0.3s ease, border-color 0.3s ease,
+    background 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(95, 188, 211, 0.4);
+  background: rgba(95, 188, 211, 0.08);
+}
+
+.nav-link {
+  color: var(--mist);
+  opacity: 0.7;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.nav-link:hover {
+  opacity: 1;
+  color: var(--crest-soft);
+}
+
+.footer-link {
+  color: var(--crest-soft);
+  opacity: 0.7;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: opacity 0.2s ease;
+}
+
+.footer-link:hover {
+  opacity: 1;
+}
+
+.field-input {
+  width: 100%;
+  background: rgba(95, 188, 211, 0.06);
+  border: 1px solid rgba(95, 188, 211, 0.2);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  color: var(--mist);
+  font-size: 0.95rem;
+  font-family: var(--font-body);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.field-input:focus {
+  border-color: var(--crest);
+  background: rgba(95, 188, 211, 0.1);
+}
+
+:focus-visible {
+  outline: 2px solid var(--crest);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .btn,
+  .card,
+  .nav-link,
+  .footer-link,
+  .field-input {
+    transition: none;
+  }
+  .btn-primary:hover,
+  .card:hover {
+    transform: none;
+  }
+}

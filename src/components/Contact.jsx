@@ -3,6 +3,18 @@ import { useState } from "react";
 const SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbx4AqLhH011Svtbe8nLSu_tWtbE-pq2MqUmyEOLsNuPlE2eillBEIU1zIrczqhPs5RU/exec";
 
+const labelStyle = {
+  display: "block",
+  fontSize: "0.8rem",
+  letterSpacing: "0.1em",
+  textTransform: "uppercase",
+  opacity: 0.55,
+  marginBottom: "0.5rem",
+  color: "var(--crest-soft)",
+};
+
+const fieldStyle = { marginBottom: "1.25rem" };
+
 export default function Contact() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -10,38 +22,10 @@ export default function Contact() {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("idle");
 
-  const inputStyle = {
-    width: "100%",
-    background: "rgba(95,188,211,0.06)",
-    border: "1px solid rgba(95,188,211,0.2)",
-    borderRadius: 8,
-    padding: "0.85rem 1rem",
-    color: "#d4ecf5",
-    fontSize: "0.95rem",
-    outline: "none",
-    boxSizing: "border-box",
-  };
-
-  const labelStyle = {
-    display: "block",
-    fontSize: "0.82rem",
-    letterSpacing: "0.1em",
-    textTransform: "uppercase",
-    opacity: 0.55,
-    marginBottom: "0.5rem",
-    color: "#7ecfea",
-  };
-
-  const fieldStyle = {
-    marginBottom: "1.25rem",
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (status === "sending") {
-      return;
-    }
+    if (status === "sending") return;
 
     setStatus("sending");
 
@@ -78,33 +62,22 @@ export default function Contact() {
     <section
       id="contact"
       style={{
-        background: "#0d2035",
+        background: "var(--water-2)",
         padding: "6rem 6vw",
-        color: "#d4ecf5",
+        color: "var(--mist)",
       }}
     >
-      <p
-        style={{
-          fontSize: 11,
-          letterSpacing: "0.3em",
-          textTransform: "uppercase",
-          color: "#5fbcd3",
-          opacity: 0.8,
-          marginBottom: "0.75rem",
-        }}
-      >
-        Get In Touch
-      </p>
+      <p className="eyebrow">Get In Touch</p>
 
       <h2
         style={{
-          fontSize: "clamp(1.8rem, 3vw, 2.6rem)",
-          fontWeight: 800,
+          fontSize: "clamp(1.9rem, 3.2vw, 2.8rem)",
+          fontWeight: 600,
           marginBottom: "0.75rem",
-          color: "#eaf6fb",
+          color: "var(--mist-bright)",
         }}
       >
-        Let&apos;s Work Together
+        Have an app in mind?
       </h2>
 
       <p
@@ -115,8 +88,8 @@ export default function Contact() {
           lineHeight: 1.7,
         }}
       >
-        Have a project in mind? Drop us a message and we&apos;ll get back to
-        you within 24 hours.
+        Tell us what you're building — a new product, a platform, or a tool
+        your team needs. We reply within 24 hours with honest next steps.
       </p>
 
       <form onSubmit={handleSubmit} style={{ maxWidth: 560 }}>
@@ -133,7 +106,6 @@ export default function Contact() {
           <label htmlFor="contact-name" style={labelStyle}>
             Name
           </label>
-
           <input
             id="contact-name"
             type="text"
@@ -141,7 +113,7 @@ export default function Contact() {
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Your name"
-            style={inputStyle}
+            className="field-input"
             required
           />
         </div>
@@ -150,7 +122,6 @@ export default function Contact() {
           <label htmlFor="contact-email" style={labelStyle}>
             Email
           </label>
-
           <input
             id="contact-email"
             type="email"
@@ -158,7 +129,7 @@ export default function Contact() {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder="yourname@example.com"
-            style={inputStyle}
+            className="field-input"
             required
           />
         </div>
@@ -167,15 +138,14 @@ export default function Contact() {
           <label htmlFor="contact-subject" style={labelStyle}>
             Subject
           </label>
-
           <input
             id="contact-subject"
             type="text"
             name="subject"
             value={subject}
             onChange={(event) => setSubject(event.target.value)}
-            placeholder="What's this about?"
-            style={inputStyle}
+            placeholder="What are you building?"
+            className="field-input"
             required
           />
         </div>
@@ -184,18 +154,15 @@ export default function Contact() {
           <label htmlFor="contact-message" style={labelStyle}>
             Message
           </label>
-
           <textarea
             id="contact-message"
             name="message"
             value={message}
             onChange={(event) => setMessage(event.target.value)}
-            placeholder="Tell us about your project..."
+            placeholder="Tell us about your project, timeline, and budget range..."
             rows={5}
-            style={{
-              ...inputStyle,
-              resize: "vertical",
-            }}
+            className="field-input"
+            style={{ resize: "vertical" }}
             required
           />
         </div>
@@ -203,44 +170,32 @@ export default function Contact() {
         <button
           type="submit"
           disabled={status === "sending"}
+          className="btn btn-primary"
           style={{
-            background: "#5fbcd3",
-            color: "#071525",
-            padding: "0.85rem 2.25rem",
-            borderRadius: 8,
-            fontWeight: 700,
-            fontSize: "0.95rem",
             border: "none",
             cursor: status === "sending" ? "not-allowed" : "pointer",
             opacity: status === "sending" ? 0.65 : 1,
           }}
         >
-          {status === "sending" ? "Sending..." : "Send Message"}
+          {status === "sending" ? "Sending..." : "Send message"}
         </button>
 
         {status === "success" && (
           <p
             role="status"
-            style={{
-              color: "#7ed6a5",
-              marginTop: "1rem",
-              lineHeight: 1.6,
-            }}
+            style={{ color: "#7ed6a5", marginTop: "1rem", lineHeight: 1.6 }}
           >
-            Your message has been sent successfully.
+            Message sent. We'll reply within 24 hours.
           </p>
         )}
 
         {status === "error" && (
           <p
             role="alert"
-            style={{
-              color: "#ff9a9a",
-              marginTop: "1rem",
-              lineHeight: 1.6,
-            }}
+            style={{ color: "#ff9a9a", marginTop: "1rem", lineHeight: 1.6 }}
           >
-            The message could not be sent. Please try again.
+            The message could not be sent. Please try again, or email us
+            directly at hello@blueswanlake.studio.
           </p>
         )}
       </form>
