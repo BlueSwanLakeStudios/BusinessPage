@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useId, useRef } from "react";
 import { gsap } from "gsap";
 
 // ===================================================================
@@ -38,83 +38,341 @@ const LOT2 =
 function SwanAnimation({ inline = false }) {
   const sceneRef = useRef(null);
   const stateRef = useRef("idle");
-  const floatTLRef = useRef(null);
-  const neckTLRef = useRef(null);
-  const headTLRef = useRef(null);
 
-  const setState = useCallback((next) => { stateRef.current = next; }, []);
+  const floatTweenRef = useRef(null);
+  const neckTweenRef = useRef(null);
+  const headTweenRef = useRef(null);
+  const actionTimelineRef = useRef(null);
+  const flapTimelineRef = useRef(null);
+
+  const clipId = useId().replace(/:/g, "");
+
+  const setState = useCallback((nextState) => {
+    stateRef.current = nextState;
+  }, []);
+
+  const pauseIdleMotion = useCallback(() => {
+    floatTweenRef.current?.pause();
+    neckTweenRef.current?.pause();
+    headTweenRef.current?.pause();
+  }, []);
+
+  const resumeIdleMotion = useCallback(() => {
+    floatTweenRef.current?.play();
+    neckTweenRef.current?.play();
+    headTweenRef.current?.play();
+  }, []);
+
+  const getActionParts = useCallback(() => {
+    const svg = sceneRef.current;
+    if (!svg) return null;
+
+    return {
+      svg,
+      swan: svg.querySelector("#swan-action"),
+      neck: svg.querySelector("#neck-action"),
+      head: svg.querySelector("#head-action"),
+      raisedWing: svg.querySelector("#raised-wing"),
+    };
+  }, []);
 
   const idle = useCallback(() => {
     if (stateRef.current === "flap") return;
+
+    const parts = getActionParts();
+    if (!parts) return;
+
     setState("idle");
-    const svg = sceneRef.current;
-    gsap.to(svg.querySelector("#swan"), { y: 0, duration: 0.7, ease: "sine.out", onComplete: () => floatTLRef.current?.play() });
-    gsap.to(svg.querySelector("#neck-head"), { rotation: 0, svgOrigin: "246 714", duration: 0.7, ease: "sine.out", onComplete: () => neckTLRef.current?.play() });
-    gsap.to(svg.querySelector("#head"), { rotation: 0, svgOrigin: "300 372", duration: 0.7, ease: "sine.out", onComplete: () => headTLRef.current?.play() });
-  }, [setState]);
+    actionTimelineRef.current?.kill();
+
+    actionTimelineRef.current = gsap.timeline({
+      defaults: {
+        duration: 0.7,
+        ease: "sine.out",
+        overwrite: "auto",
+      },
+      onComplete: resumeIdleMotion,
+    });
+
+    actionTimelineRef.current
+      .to(parts.swan, { y: 0 }, 0)
+      .to(
+        parts.neck,
+        {
+          rotation: 0,
+          svgOrigin: "246 714",
+        },
+        0
+      )
+      .to(
+        parts.head,
+        {
+          rotation: 0,
+          svgOrigin: "300 372",
+        },
+        0
+      );
+  }, [getActionParts, resumeIdleMotion, setState]);
 
   const alertState = useCallback(() => {
     if (stateRef.current === "flap") return;
+
+    const parts = getActionParts();
+    if (!parts) return;
+
     setState("alert");
-    floatTLRef.current?.pause(); neckTLRef.current?.pause(); headTLRef.current?.pause();
-    const svg = sceneRef.current;
-    gsap.to(svg.querySelector("#swan"), { y: -12, duration: 0.45, ease: "power2.out" });
-    gsap.to(svg.querySelector("#neck-head"), { rotation: 1.5, svgOrigin: "246 714", duration: 0.6, ease: "power2.out" });
-    gsap.to(svg.querySelector("#head"), { rotation: 2.5, svgOrigin: "300 372", duration: 0.6, ease: "power2.out" });
-  }, [setState]);
+    pauseIdleMotion();
+    actionTimelineRef.current?.kill();
+
+    actionTimelineRef.current = gsap.timeline({
+      defaults: {
+        duration: 0.55,
+        ease: "power2.out",
+        overwrite: "auto",
+      },
+    });
+
+    actionTimelineRef.current
+      .to(parts.swan, { y: -12 }, 0)
+      .to(
+        parts.neck,
+        {
+          rotation: 1.5,
+          svgOrigin: "246 714",
+        },
+        0
+      )
+      .to(
+        parts.head,
+        {
+          rotation: 2.5,
+          svgOrigin: "300 372",
+        },
+        0
+      );
+  }, [getActionParts, pauseIdleMotion, setState]);
 
   const flap = useCallback(() => {
     if (stateRef.current === "flap") return;
+
+    const parts = getActionParts();
+    if (!parts) return;
+
     setState("flap");
-    floatTLRef.current?.pause(); neckTLRef.current?.pause(); headTLRef.current?.pause();
-    const svg = sceneRef.current;
-    const raisedWing = svg.querySelector("#raised-wing");
-    const swan = svg.querySelector("#swan");
-    const head = svg.querySelector("#head");
-    const tl = gsap.timeline({
+    pauseIdleMotion();
+    actionTimelineRef.current?.kill();
+    flapTimelineRef.current?.kill();
+
+    flapTimelineRef.current = gsap.timeline({
       onComplete: () => {
-        gsap.set(raisedWing, { opacity: 0, rotation: 0, scale: 1 });
+        gsap.set(parts.raisedWing, {
+          opacity: 0,
+          rotation: 0,
+          scale: 1,
+        });
+
+        // Clear the flap guard before returning to the idle pose.
+        stateRef.current = "idle";
         idle();
       },
     });
-    tl.fromTo(
-        raisedWing,
-        { opacity: 0, rotation: -16, scale: 0.85, svgOrigin: "450 648" },
-        { opacity: 1, rotation: 0, scale: 1, svgOrigin: "450 648", duration: 0.28, ease: "back.out(1.6)" },
+
+    flapTimelineRef.current
+      .fromTo(
+        parts.raisedWing,
+        {
+          opacity: 0,
+          rotation: -16,
+          scale: 0.85,
+          svgOrigin: "450 648",
+        },
+        {
+          opacity: 1,
+          rotation: 0,
+          scale: 1,
+          svgOrigin: "450 648",
+          duration: 0.28,
+          ease: "back.out(1.6)",
+        },
         0
       )
-      .to(raisedWing, { rotation: 13, svgOrigin: "450 648", duration: 0.18, ease: "power2.in" })
-      .to(swan, { y: 4, duration: 0.18, ease: "power2.in" }, "<")
-      .to(head, { rotation: 2.5, svgOrigin: "300 372", duration: 0.18, ease: "power2.in" }, "<")
-      .to(raisedWing, { rotation: -11, svgOrigin: "450 648", duration: 0.22, ease: "power2.out" })
-      .to(swan, { y: -9, duration: 0.22, ease: "power2.out" }, "<")
-      .to(head, { rotation: -3, svgOrigin: "300 372", duration: 0.22, ease: "power2.out" }, "<")
-      .to(raisedWing, { rotation: 9, svgOrigin: "450 648", duration: 0.2, ease: "sine.inOut" })
-      .to(swan, { y: 2, duration: 0.2, ease: "sine.inOut" }, "<")
-      .to(head, { rotation: 2, svgOrigin: "300 372", duration: 0.2, ease: "sine.inOut" }, "<")
-      .to(raisedWing, { rotation: -3, svgOrigin: "450 648", duration: 0.18, ease: "power2.out" })
-      .to(swan, { y: -5, duration: 0.18, ease: "power2.out" }, "<")
-      .to(head, { rotation: -1.2, svgOrigin: "300 372", duration: 0.18, ease: "power2.out" }, "<")
+      .to(parts.raisedWing, {
+        rotation: 13,
+        svgOrigin: "450 648",
+        duration: 0.18,
+        ease: "power2.in",
+      })
+      .to(parts.swan, { y: 4, duration: 0.18, ease: "power2.in" }, "<")
+      .to(
+        parts.head,
+        {
+          rotation: 2.5,
+          svgOrigin: "300 372",
+          duration: 0.18,
+          ease: "power2.in",
+        },
+        "<"
+      )
+      .to(parts.raisedWing, {
+        rotation: -11,
+        svgOrigin: "450 648",
+        duration: 0.22,
+        ease: "power2.out",
+      })
+      .to(parts.swan, { y: -9, duration: 0.22, ease: "power2.out" }, "<")
+      .to(
+        parts.head,
+        {
+          rotation: -3,
+          svgOrigin: "300 372",
+          duration: 0.22,
+          ease: "power2.out",
+        },
+        "<"
+      )
+      .to(parts.raisedWing, {
+        rotation: 9,
+        svgOrigin: "450 648",
+        duration: 0.2,
+        ease: "sine.inOut",
+      })
+      .to(parts.swan, { y: 2, duration: 0.2, ease: "sine.inOut" }, "<")
+      .to(
+        parts.head,
+        {
+          rotation: 2,
+          svgOrigin: "300 372",
+          duration: 0.2,
+          ease: "sine.inOut",
+        },
+        "<"
+      )
+      .to(parts.raisedWing, {
+        rotation: -3,
+        svgOrigin: "450 648",
+        duration: 0.18,
+        ease: "power2.out",
+      })
+      .to(parts.swan, { y: -5, duration: 0.18, ease: "power2.out" }, "<")
+      .to(
+        parts.head,
+        {
+          rotation: -1.2,
+          svgOrigin: "300 372",
+          duration: 0.18,
+          ease: "power2.out",
+        },
+        "<"
+      )
       .to({}, { duration: 0.16 })
-      .to(raisedWing, { opacity: 0, rotation: -16, scale: 0.86, svgOrigin: "450 648", duration: 0.24, ease: "power2.in" });
-  }, [setState, idle]);
+      .to(parts.raisedWing, {
+        opacity: 0,
+        rotation: -16,
+        scale: 0.86,
+        svgOrigin: "450 648",
+        duration: 0.24,
+        ease: "power2.in",
+      });
+  }, [getActionParts, idle, pauseIdleMotion, setState]);
+
+  const handleKeyDown = useCallback(
+    (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      flap();
+    },
+    [flap]
+  );
 
   useEffect(() => {
     const svg = sceneRef.current;
-    if (!svg) return;
-    floatTLRef.current = gsap.to(svg.querySelector("#swan"), { y: -8, duration: 3.4, ease: "sine.inOut", repeat: -1, yoyo: true });
-    neckTLRef.current = gsap.to(svg.querySelector("#neck-head"), { rotation: 0.6, svgOrigin: "246 714", duration: 4.2, ease: "sine.inOut", repeat: -1, yoyo: true });
-    headTLRef.current = gsap.to(svg.querySelector("#head"), { rotation: 1.2, svgOrigin: "300 372", duration: 3.4, ease: "sine.inOut", repeat: -1, yoyo: true, delay: 0.5 });
-    gsap.utils.toArray(svg.querySelectorAll(".ripple")).forEach((el, i) => {
-      gsap.fromTo(el, { scale: 0.85, opacity: 0.3, transformOrigin: "50% 50%" }, { scale: 1.18, opacity: 0.02, duration: 3.8, repeat: -1, ease: "power1.out", delay: i * 1.2 });
-    });
-    gsap.utils.toArray(svg.querySelectorAll(".lotus")).forEach((el, i) => {
-      gsap.to(el, { rotation: i % 2 ? -1.5 : 1.5, transformOrigin: "50% 100%", duration: 3 + i * 0.4, ease: "sine.inOut", repeat: -1, yoyo: true, delay: i * 0.4 });
-    });
+    if (!svg) return undefined;
+
+    const context = gsap.context(() => {
+      floatTweenRef.current = gsap.to("#swan-idle", {
+        y: -8,
+        duration: 3.4,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true,
+      });
+
+      neckTweenRef.current = gsap.to("#neck-idle", {
+        rotation: 0.6,
+        svgOrigin: "246 714",
+        duration: 4.2,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true,
+      });
+
+      headTweenRef.current = gsap.to("#head-idle", {
+        rotation: 1.2,
+        svgOrigin: "300 372",
+        duration: 3.4,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true,
+        delay: 0.5,
+      });
+
+      gsap.utils.toArray(".ripple-layer").forEach((ripple, index) => {
+        gsap.fromTo(
+          ripple,
+          {
+            scale: 0.85,
+            opacity: 0.3,
+            transformOrigin: "50% 50%",
+            transformBox: "fill-box",
+          },
+          {
+            scale: 1.18,
+            opacity: 0.02,
+            duration: 3.8,
+            repeat: -1,
+            ease: "power1.out",
+            delay: index * 1.2,
+          }
+        );
+      });
+
+      gsap.utils.toArray(".lotus-layer").forEach((lotus, index) => {
+        const direction = index % 2 === 0 ? 1 : -1;
+        const origin = lotus.dataset.svgOrigin;
+
+        gsap.fromTo(
+          lotus,
+          {
+            rotation: -1.8 * direction,
+            y: 1.5,
+            svgOrigin: origin,
+          },
+          {
+            rotation: 2.2 * direction,
+            y: -2.5,
+            svgOrigin: origin,
+            duration: 3.4 + index * 0.55,
+            ease: "sine.inOut",
+            repeat: -1,
+            yoyo: true,
+            delay: -index * 0.8,
+          }
+        );
+      });
+    }, svg);
+
     setState("idle");
+
     return () => {
-      gsap.killTweensOf(svg.querySelectorAll("*"));
-      floatTLRef.current?.kill(); neckTLRef.current?.kill(); headTLRef.current?.kill();
+      actionTimelineRef.current?.kill();
+      flapTimelineRef.current?.kill();
+      context.revert();
+
+      floatTweenRef.current = null;
+      neckTweenRef.current = null;
+      headTweenRef.current = null;
+      actionTimelineRef.current = null;
+      flapTimelineRef.current = null;
     };
   }, [setState]);
 
@@ -122,51 +380,172 @@ function SwanAnimation({ inline = false }) {
     <section
       style={{
         width: "min(92vw, 480px)",
-        aspectRatio: "1/1",
+        aspectRatio: "1 / 1",
         borderRadius: "50%",
-        background: "rgba(6,22,40,0.5)",
-        boxShadow: "0 28px 90px rgba(0,0,0,0.42), inset 0 0 0 1px rgba(130,205,230,0.14)",
+        background: "rgba(6, 22, 40, 0.5)",
+        boxShadow:
+          "0 28px 90px rgba(0, 0, 0, 0.42), inset 0 0 0 1px rgba(130, 205, 230, 0.14)",
         overflow: "hidden",
       }}
     >
       <svg
         ref={sceneRef}
         viewBox="0 0 1000 1000"
-        role="img"
-        aria-label="Animated blue swan on a lotus lake"
-        style={{ width: "100%", height: "100%", display: "block", cursor: "pointer", userSelect: "none" }}
+        role="button"
+        tabIndex={0}
+        aria-label="Animated blue swan on a lotus lake. Click or press Enter to flap."
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "block",
+          cursor: "pointer",
+          userSelect: "none",
+          outline: "none",
+        }}
         onMouseEnter={alertState}
         onMouseLeave={idle}
+        onFocus={alertState}
+        onBlur={idle}
         onClick={flap}
+        onKeyDown={handleKeyDown}
       >
+        <style>{`
+          .lotus-layer,
+          .ripple-layer {
+            transform-box: fill-box;
+            will-change: transform;
+          }
+
+          .lotus-layer {
+            transform-origin: 50% 100%;
+          }
+
+          .ripple-layer {
+            transform-origin: 50% 50%;
+          }
+        `}</style>
+
         <defs>
-          <clipPath id="circle-clip"><circle cx="500" cy="500" r="468" /></clipPath>
+          <clipPath id={clipId}>
+            <circle cx="500" cy="500" r="468" />
+          </clipPath>
         </defs>
-        <g clipPath="url(#circle-clip)">
+
+        <g clipPath={`url(#${clipId})`}>
           <g transform="translate(-114.4 -114.4) scale(1.2)">
             <image href={BG} x="0" y="0" width="1024" height="1024" />
-            <g fill="none" stroke="#eaf6f0" strokeWidth="2.5" opacity="0.3">
-              <ellipse className="ripple" cx="520" cy="778" rx="250" ry="20" />
-              <ellipse className="ripple" cx="515" cy="789" rx="160" ry="13" />
+
+            <g
+              fill="none"
+              stroke="#eaf6f0"
+              strokeWidth="2.5"
+              opacity="0.3"
+              pointerEvents="none"
+            >
+              <ellipse
+                className="ripple-layer"
+                cx="520"
+                cy="778"
+                rx="250"
+                ry="20"
+              />
+              <ellipse
+                className="ripple-layer"
+                cx="515"
+                cy="789"
+                rx="160"
+                ry="13"
+              />
             </g>
-            <image className="lotus" href={LOT1} x="732" y="358" width="177" height="115" />
-            <image className="lotus" href={LOT2} x="504" y="365" width="121" height="67" />
-            <g id="swan">
-              <g id="raised-wing" opacity="0">
-                <path d="M430 640 L400 420 L480 620 Z" fill="#0aa0d4" />
-                <path d="M460 630 L490 360 L530 626 Z" fill="#0090c9" />
-                <path d="M495 630 L580 388 L580 636 Z" fill="#057abf" />
-                <path d="M525 640 L660 440 L620 652 Z" fill="#0057a9" />
-              </g>
-              <g id="bodyg"><image href={BODY} x="215" y="380" width="621" height="387" /></g>
-              <g id="neck-head">
-                <g id="neck"><image href={NECK} x="233" y="340" width="218" height="331" /></g>
-                <g id="head"><image href={HEAD} x="253" y="326" width="152" height="109" /></g>
+
+            {/* Wrapping each flower in a group gives GSAP a reliable SVG pivot. */}
+            <g
+              className="lotus-layer"
+              data-svg-origin="870.2 453.2"
+              pointerEvents="none"
+            >
+              <image
+                href={LOT1}
+                x="732"
+                y="358"
+                width="177"
+                height="115"
+              />
+            </g>
+
+            <g
+              className="lotus-layer"
+              data-svg-origin="563 404"
+              pointerEvents="none"
+            >
+              <image
+                href={LOT2}
+                x="504"
+                y="365"
+                width="121"
+                height="67"
+              />
+            </g>
+
+            {/* Action and idle wrappers keep their GSAP transforms separate. */}
+            <g id="swan-action">
+              <g id="swan-idle">
+                <g id="raised-wing" opacity="0">
+                  <path d="M430 640 L400 420 L480 620 Z" fill="#0aa0d4" />
+                  <path d="M460 630 L490 360 L530 626 Z" fill="#0090c9" />
+                  <path d="M495 630 L580 388 L580 636 Z" fill="#057abf" />
+                  <path d="M525 640 L660 440 L620 652 Z" fill="#0057a9" />
+                </g>
+
+                <g id="body">
+                  <image
+                    href={BODY}
+                    x="215"
+                    y="380"
+                    width="621"
+                    height="387"
+                  />
+                </g>
+
+                <g id="neck-action">
+                  <g id="neck-idle">
+                    <g id="neck">
+                      <image
+                        href={NECK}
+                        x="233"
+                        y="340"
+                        width="218"
+                        height="331"
+                      />
+                    </g>
+
+                    <g id="head-action">
+                      <g id="head-idle">
+                        <image
+                          href={HEAD}
+                          x="253"
+                          y="326"
+                          width="152"
+                          height="109"
+                        />
+                      </g>
+                    </g>
+                  </g>
+                </g>
               </g>
             </g>
           </g>
         </g>
-        <circle cx="500" cy="500" r="468" fill="none" stroke="#16324F" strokeWidth="9" />
+
+        <circle
+          cx="500"
+          cy="500"
+          r="468"
+          fill="none"
+          stroke="#16324f"
+          strokeWidth="9"
+          pointerEvents="none"
+        />
       </svg>
     </section>
   );
@@ -174,14 +553,36 @@ function SwanAnimation({ inline = false }) {
   if (inline) return svgStage;
 
   return (
-    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "radial-gradient(circle at 50% 18%, rgba(95,188,211,0.18), transparent 38%), linear-gradient(180deg,#0a1c30,#123048)", overflow: "hidden" }}>
-      <style>{`
-        .lotus, .ripple { transform-box: fill-box; transform-origin: center; }
-      `}</style>
-      <div style={{ width: "min(94vw,980px)", display: "grid", gap: 18, justifyItems: "center" }}>
-        <div style={{ fontSize: 12, letterSpacing: "0.28em", textTransform: "uppercase", opacity: 0.78, color: "#d4ecf5" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        background:
+          "radial-gradient(circle at 50% 18%, rgba(95, 188, 211, 0.18), transparent 38%), linear-gradient(180deg, #0a1c30, #123048)",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          width: "min(94vw, 980px)",
+          display: "grid",
+          gap: 18,
+          justifyItems: "center",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 12,
+            letterSpacing: "0.28em",
+            textTransform: "uppercase",
+            opacity: 0.78,
+            color: "#d4ecf5",
+          }}
+        >
           Blue Swan · Lotus Lake · Rive-Style
         </div>
+
         {svgStage}
       </div>
     </div>
