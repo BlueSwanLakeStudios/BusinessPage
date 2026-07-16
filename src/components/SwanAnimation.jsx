@@ -6,6 +6,7 @@ function SwanAnimation({ inline = false }) {
   const stateRef = useRef("idle");
   const floatTLRef = useRef(null);
   const neckTLRef = useRef(null);
+  const headTLRef = useRef(null);
   const wingTLRef = useRef(null);
 
   const setState = useCallback((next) => { stateRef.current = next; }, []);
@@ -16,16 +17,18 @@ function SwanAnimation({ inline = false }) {
     const svg = sceneRef.current;
     gsap.to(svg.querySelector("#swan"), { y: 0, duration: 0.7, ease: "sine.out", onComplete: () => floatTLRef.current?.play() });
     gsap.to(svg.querySelector("#neck-head"), { rotation: 0, svgOrigin: "336 752", duration: 0.7, ease: "sine.out", onComplete: () => neckTLRef.current?.play() });
+    gsap.to(svg.querySelector("#head"), { rotation: 0, svgOrigin: "480 488", duration: 0.7, ease: "sine.out", onComplete: () => headTLRef.current?.play() });
     gsap.to(svg.querySelector("#wing"), { rotation: 0, scaleY: 1, svgOrigin: "520 700", duration: 0.55, ease: "sine.out", onComplete: () => wingTLRef.current?.play() });
   }, [setState]);
 
   const alertState = useCallback(() => {
     if (stateRef.current === "flap") return;
     setState("alert");
-    floatTLRef.current?.pause(); neckTLRef.current?.pause(); wingTLRef.current?.pause();
+    floatTLRef.current?.pause(); neckTLRef.current?.pause(); headTLRef.current?.pause(); wingTLRef.current?.pause();
     const svg = sceneRef.current;
     gsap.to(svg.querySelector("#swan"), { y: -22, duration: 0.45, ease: "power2.out" });
     gsap.to(svg.querySelector("#neck-head"), { rotation: -3.5, svgOrigin: "336 752", duration: 0.6, ease: "power2.out" });
+    gsap.to(svg.querySelector("#head"), { rotation: -4, svgOrigin: "480 488", duration: 0.6, ease: "power2.out" });
     gsap.to(svg.querySelector("#wing"), { rotation: -3, scaleY: 1.025, svgOrigin: "520 700", duration: 0.45, ease: "power2.out" });
   }, [setState]);
 
@@ -39,11 +42,12 @@ function SwanAnimation({ inline = false }) {
   const flap = useCallback(() => {
     if (stateRef.current === "flap") return;
     setState("flap");
-    floatTLRef.current?.pause(); neckTLRef.current?.pause(); wingTLRef.current?.pause();
+    floatTLRef.current?.pause(); neckTLRef.current?.pause(); headTLRef.current?.pause(); wingTLRef.current?.pause();
     const svg = sceneRef.current;
     const wing = svg.querySelector("#wing");
     const raisedWing = svg.querySelector("#raised-wing");
     const swan = svg.querySelector("#swan");
+    const head = svg.querySelector("#head");
     const tl = gsap.timeline({
       onComplete: () => {
         gsap.set(raisedWing, { opacity: 0, rotation: 0, scaleX: 1, scaleY: 1 });
@@ -60,12 +64,16 @@ function SwanAnimation({ inline = false }) {
       )
       .to(raisedWing, { rotation: -16, svgOrigin: "500 710", duration: 0.18, ease: "power2.in" })
       .to(swan, { y: 6, duration: 0.18, ease: "power2.in" }, "<")
+      .to(head, { rotation: 4, svgOrigin: "480 488", duration: 0.18, ease: "power2.in" }, "<")
       .to(raisedWing, { rotation: -13, svgOrigin: "500 710", duration: 0.22, ease: "power2.out" })
       .to(swan, { y: -14, duration: 0.22, ease: "power2.out" }, "<")
+      .to(head, { rotation: -5, svgOrigin: "480 488", duration: 0.22, ease: "power2.out" }, "<")
       .to(raisedWing, { rotation: 12, svgOrigin: "500 710", duration: 0.2, ease: "sine.inOut" })
       .to(swan, { y: 2, duration: 0.2, ease: "sine.inOut" }, "<")
+      .to(head, { rotation: 3, svgOrigin: "480 488", duration: 0.2, ease: "sine.inOut" }, "<")
       .to(raisedWing, { rotation: -4, svgOrigin: "500 710", duration: 0.18, ease: "power2.out" })
       .to(swan, { y: -8, duration: 0.18, ease: "power2.out" }, "<")
+      .to(head, { rotation: -2, svgOrigin: "480 488", duration: 0.18, ease: "power2.out" }, "<")
       .to({}, { duration: 0.16 })
       .to(raisedWing, { opacity: 0, rotation: 18, scaleX: -0.84, scaleY: 0.84, svgOrigin: "500 710", duration: 0.24, ease: "power2.in" })
       .to(wing, { opacity: 1, duration: 0.18 }, "<0.08");
@@ -76,6 +84,7 @@ function SwanAnimation({ inline = false }) {
     if (!svg) return;
     floatTLRef.current = gsap.to(svg.querySelector("#swan"), { y: -14, duration: 3.2, ease: "sine.inOut", repeat: -1, yoyo: true });
     neckTLRef.current = gsap.to(svg.querySelector("#neck-head"), { rotation: 1.1, svgOrigin: "336 752", duration: 4.2, ease: "sine.inOut", repeat: -1, yoyo: true });
+    headTLRef.current = gsap.to(svg.querySelector("#head"), { rotation: 1.8, svgOrigin: "480 488", duration: 3.4, ease: "sine.inOut", repeat: -1, yoyo: true, delay: 0.5 });
     wingTLRef.current = gsap.to(svg.querySelector("#wing"), { rotation: -1.6, scaleY: 1.015, svgOrigin: "520 700", duration: 2.2, ease: "sine.inOut", repeat: -1, yoyo: true });
     gsap.utils.toArray(svg.querySelectorAll(".feather")).forEach((el, i) => {
       gsap.to(el, { rotation: i % 2 ? 1.8 : -1.6, svgOrigin: "300 705", duration: 1.8 + i * 0.16, ease: "sine.inOut", repeat: -1, yoyo: true, delay: i * 0.14 });
@@ -92,7 +101,7 @@ function SwanAnimation({ inline = false }) {
     setState("idle");
     return () => {
       gsap.killTweensOf(svg.querySelectorAll("*"));
-      floatTLRef.current?.kill(); neckTLRef.current?.kill(); wingTLRef.current?.kill();
+      floatTLRef.current?.kill(); neckTLRef.current?.kill(); headTLRef.current?.kill(); wingTLRef.current?.kill();
     };
   }, [setState]);
 
@@ -124,7 +133,7 @@ function SwanAnimation({ inline = false }) {
           <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#A8DCD3" /><stop offset="0.45" stopColor="#5FBCD3" /><stop offset="1" stopColor="#2E7FC2" />
           </linearGradient>
-          <linearGradient id="swanNeck" x1="0" y1="0" x2="1" y2="1">
+          <linearGradient id="swanNeck" gradientUnits="userSpaceOnUse" x1="551" y1="100" x2="846" y2="830">
             <stop offset="0%" stopColor="#9ed6ff" /><stop offset="45%" stopColor="#55adff" /><stop offset="100%" stopColor="#0962dd" />
           </linearGradient>
           <linearGradient id="deepBlue" x1="0" y1="0" x2="1" y2="1">
@@ -202,36 +211,49 @@ function SwanAnimation({ inline = false }) {
                 </g>
                 <g id="neck-scale" transform="translate(690 752) scale(0.82) translate(-690 -752)">
                   <g id="neck-head">
-                    <path d="M655 754 C724 673 711 585 652 492 C607 422 551 368 558 259 C565 139 661 94 746 132 C819 165 839 246 791 296 C758 330 696 336 635 301 C610 360 656 425 707 495 C781 597 846 704 770 787 C731 830 685 805 655 754 Z" fill="url(#swanNeck)" />
-                    <g id="neck-facets" opacity="0.92">
-                      <path d="M594 251 L635 178 L706 201 L635 301 Z" fill="#78c9ff" opacity="0.58" />
-                      <path d="M635 178 L746 151 L708 201 Z" fill="#28a2f6" opacity="0.66" />
-                      <path d="M708 201 L801 257 L791 296 L706 282 Z" fill="#0a4fb4" opacity="0.54" />
-                      <path d="M635 301 L706 282 L690 374 L650 390 Z" fill="#a5ddff" opacity="0.46" />
-                      <path d="M650 390 L690 374 L707 495 L665 500 Z" fill="#29a2ff" opacity="0.62" />
-                      <path d="M610 360 L650 390 L665 500 L626 448 Z" fill="#7fd0ff" opacity="0.48" />
-                      <path d="M665 500 L707 495 L762 604 L715 600 Z" fill="#074bb5" opacity="0.46" />
-                      <path d="M626 448 L665 500 L715 600 L676 594 Z" fill="#55b9ff" opacity="0.56" />
-                      <path d="M676 594 L715 600 L770 787 L703 735 Z" fill="#083f9d" opacity="0.48" />
-                      <path d="M655 754 L676 594 L703 735 L685 805 Z" fill="#83d2ff" opacity="0.42" />
-                      <path d="M703 735 L770 787 L720 823 L685 805 Z" fill="#064ab2" opacity="0.50" />
+                    {/* NECK and HEAD are now separate siblings inside #neck-head.
+                        #neck-head still sways as a whole (existing tweens
+                        untouched); #head can additionally rotate on its own.
+                        Head pivot (joint) is local (600,285) = svgOrigin
+                        "480 488" in global viewBox coords after all ancestor
+                        transforms. The head's base dips ~15px below the neck's
+                        top edge, so rotations up to ~±10° never expose a gap. */}
+                    <g id="neck">
+                      <path d="M655 754 C724 673 711 585 652 492 C607 422 553 372 562 272 C584 288 606 296 635 301 C610 360 656 425 707 495 C781 597 846 704 770 787 C731 830 685 805 655 754 Z" fill="url(#swanNeck)" />
+                      <g id="neck-facets" opacity="0.92">
+                        <path d="M638 312 L702 288 L690 374 L650 390 Z" fill="#a5ddff" opacity="0.46" />
+                        <path d="M650 390 L690 374 L707 495 L665 500 Z" fill="#29a2ff" opacity="0.62" />
+                        <path d="M610 360 L650 390 L665 500 L626 448 Z" fill="#7fd0ff" opacity="0.48" />
+                        <path d="M665 500 L707 495 L762 604 L715 600 Z" fill="#074bb5" opacity="0.46" />
+                        <path d="M626 448 L665 500 L715 600 L676 594 Z" fill="#55b9ff" opacity="0.56" />
+                        <path d="M676 594 L715 600 L770 787 L703 735 Z" fill="#083f9d" opacity="0.48" />
+                        <path d="M655 754 L676 594 L703 735 L685 805 Z" fill="#83d2ff" opacity="0.42" />
+                        <path d="M703 735 L770 787 L720 823 L685 805 Z" fill="#064ab2" opacity="0.50" />
+                      </g>
                     </g>
-                    <path d="M594 251 C606 164 684 126 746 151 C791 169 812 213 801 257 C779 232 745 213 708 201 C662 186 624 201 594 251 Z" fill="#b5e5ff" opacity="0.28" />
+                    <g id="head">
+                      <path d="M558 259 L574 168 L648 106 L730 122 L786 168 L798 226 L764 276 L635 301 L598 316 L566 292 Z" fill="url(#swanNeck)" />
+                      <g id="head-facets" opacity="0.95">
+                        <path d="M574 168 L648 106 L690 160 L612 196 Z" fill="#b5e5ff" opacity="0.5" />
+                        <path d="M648 106 L730 122 L690 160 Z" fill="#78c9ff" opacity="0.6" />
+                        <path d="M690 160 L730 122 L786 168 L744 208 Z" fill="#28a2f6" opacity="0.6" />
+                        <path d="M744 208 L786 168 L798 226 L764 276 Z" fill="#0a4fb4" opacity="0.55" />
+                        <path d="M612 196 L690 160 L744 208 L676 252 Z" fill="#55b9ff" opacity="0.4" />
+                        <path d="M558 259 L612 196 L676 252 L635 301 Z" fill="#83d2ff" opacity="0.35" />
+                      </g>
 
-                    {/* Logo-style black beak: same anchor point and angle as the
-                        old blue beak, just solid black with a lighter lower jaw
-                        and a thin sheen line, plus a small black face patch
-                        bridging the beak base toward the eye (like the logo). */}
-                    <g id="beak" transform="translate(20 -6)">
-                      <path d="M700,202 L862,262 L868,276 L852,280 L696,232 Q690,214 700,202 Z" fill="#10141c" />
-                      <path d="M696,232 L852,280 L760,268 Q722,252 696,232 Z" fill="#2b3546" />
-                      <path d="M706,208 Q788,224 848,264" fill="none" stroke="#eafbff" strokeWidth="2" opacity="0.35" strokeLinecap="round" />
+                      {/* Logo-style black beak + face patch bridging toward the eye */}
+                      <g id="beak" transform="translate(20 -6)">
+                        <path d="M700,202 L862,262 L868,276 L852,280 L696,232 Q690,214 700,202 Z" fill="#10141c" />
+                        <path d="M696,232 L852,280 L760,268 Q722,252 696,232 Z" fill="#2b3546" />
+                        <path d="M706,208 Q788,224 848,264" fill="none" stroke="#eafbff" strokeWidth="2" opacity="0.35" strokeLinecap="round" />
+                      </g>
+                      <path d="M718,198 L716,226 L756,232 L762,206 Z" fill="#10141c" />
+
+                      {/* Eye */}
+                      <ellipse cx="726" cy="184" rx="13" ry="12.5" fill="#07090e" />
+                      <circle cx="727" cy="182" r="3.6" fill="#ffffff" opacity="0.95" />
                     </g>
-                    <path d="M718,198 L716,226 L756,232 L762,206 Z" fill="#10141c" />
-
-                    {/* Eye */}
-                    <ellipse cx="720" cy="190" rx="16" ry="15" fill="#07090e" />
-                    <circle cx="720" cy="190" r="4" fill="#ffffff" opacity="0.95" />
                   </g>
                 </g>
               </g>
@@ -251,7 +273,7 @@ function SwanAnimation({ inline = false }) {
   return (
     <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "radial-gradient(circle at 50% 18%, rgba(95,188,211,0.18), transparent 38%), linear-gradient(180deg,#0a1c30,#123048)", overflow: "hidden" }}>
       <style>{`
-        #swan, #neck-head, #wing, #raised-wing, .lotus, .leaf, .ripple, .feather, .grass {
+        #swan, #neck-head, #neck, #head, #wing, #raised-wing, .lotus, .leaf, .ripple, .feather, .grass {
           transform-box: fill-box; transform-origin: center;
         }
       `}</style>
