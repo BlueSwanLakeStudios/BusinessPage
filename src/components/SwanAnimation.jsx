@@ -316,48 +316,70 @@ function SwanAnimation({ inline = false }) {
         delay: 0.5,
       });
 
+      // Slow, low-contrast ripples keep the water alive without competing
+      // with the swan or making the scene feel mechanically animated.
       gsap.utils.toArray(".ripple-layer").forEach((ripple, index) => {
         gsap.fromTo(
           ripple,
           {
-            scale: 0.85,
-            opacity: 0.3,
+            scaleX: 0.94,
+            scaleY: 0.9,
+            opacity: 0.18,
             transformOrigin: "50% 50%",
             transformBox: "fill-box",
           },
           {
-            scale: 1.18,
-            opacity: 0.02,
-            duration: 3.8,
+            scaleX: 1.1,
+            scaleY: 1.04,
+            opacity: 0,
+            duration: 5.4 + index * 0.7,
             repeat: -1,
             ease: "power1.out",
-            delay: index * 1.2,
+            delay: index * 1.65,
           }
         );
       });
 
+      // The lotus cutouts now drift as complete pieces instead of bending
+      // around a fixed stem. The near flower moves slightly more than the
+      // distant flower to create a restrained sense of depth.
       gsap.utils.toArray(".lotus-layer").forEach((lotus, index) => {
         const direction = index % 2 === 0 ? 1 : -1;
-        const origin = lotus.dataset.svgOrigin;
+        const depth = index === 0 ? 1 : 0.58;
 
-        gsap.fromTo(
-          lotus,
-          {
-            rotation: -1.8 * direction,
-            y: 1.5,
-            svgOrigin: origin,
-          },
-          {
-            rotation: 2.2 * direction,
-            y: -2.5,
-            svgOrigin: origin,
-            duration: 3.4 + index * 0.55,
+        gsap.set(lotus, {
+          x: 0,
+          y: 0,
+          rotation: 0,
+          transformOrigin: "50% 55%",
+          transformBox: "fill-box",
+        });
+
+        gsap.timeline({
+          repeat: -1,
+          delay: -index * 1.4,
+          defaults: {
             ease: "sine.inOut",
-            repeat: -1,
-            yoyo: true,
-            delay: -index * 0.8,
-          }
-        );
+          },
+        })
+          .to(lotus, {
+            x: 0.7 * direction * depth,
+            y: -0.75 * depth,
+            rotation: 0.12 * direction * depth,
+            duration: 4.6 + index * 0.8,
+          })
+          .to(lotus, {
+            x: -0.45 * direction * depth,
+            y: 0.28 * depth,
+            rotation: -0.08 * direction * depth,
+            duration: 5.2 + index * 0.9,
+          })
+          .to(lotus, {
+            x: 0,
+            y: 0,
+            rotation: 0,
+            duration: 4.8 + index * 0.75,
+          });
       });
     }, svg);
 
@@ -417,7 +439,7 @@ function SwanAnimation({ inline = false }) {
           }
 
           .lotus-layer {
-            transform-origin: 50% 100%;
+            transform-origin: 50% 55%;
           }
 
           .ripple-layer {
@@ -458,10 +480,9 @@ function SwanAnimation({ inline = false }) {
               />
             </g>
 
-            {/* Wrapping each flower in a group gives GSAP a reliable SVG pivot. */}
+            {/* Each lotus moves as one complete floating cutout. */}
             <g
               className="lotus-layer"
-              data-svg-origin="870.2 453.2"
               pointerEvents="none"
             >
               <image
@@ -475,7 +496,6 @@ function SwanAnimation({ inline = false }) {
 
             <g
               className="lotus-layer"
-              data-svg-origin="563 404"
               pointerEvents="none"
             >
               <image
