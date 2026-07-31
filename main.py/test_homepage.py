@@ -71,7 +71,4 @@ time.sleep(3)
 
 driver.quit()
 print("✅ Browser Closed Successfully")
-time.sleep(3)
 
-driver.quit()
-print("✅ Browser Closed Successfully")
