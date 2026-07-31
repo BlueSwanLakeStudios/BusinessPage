@@ -181,13 +181,17 @@ export default function Contact() {
         </button>
 
         {status === "success" && (
-          <p
-            role="status"
-            style={{ color: "#7ed6a5", marginTop: "1rem", lineHeight: 1.6 }}
-          >
-            Message sent. We'll reply within 24 hours.
-          </p>
-        )}
+  <p
+    role="status"
+    style={{
+      color: "#7ed6a5",
+      marginTop: "1rem",
+      lineHeight: 1.6,
+    }}
+  >
+    Your message has been sent successfully.
+  </p>
+)}
 
         {status === "error" && (
           <p
