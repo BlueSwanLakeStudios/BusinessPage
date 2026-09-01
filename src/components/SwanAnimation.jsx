@@ -1,5 +1,5 @@
-const { useCallback, useEffect, useId, useRef } = React;
-const gsap = new Proxy({}, { get: (_, k) => window.gsap[k] });
+import { useCallback, useEffect, useId, useRef } from "react";
+import { gsap } from "gsap";
 
 // ===================================================================
 // The scene IS the reference artwork, rigged as a cutout puppet:
@@ -476,5 +476,4 @@ function SwanAnimation({ inline = false }) {
   );
 }
 
-module.exports = { SwanAnimation };
-window.SwanAnimation = SwanAnimation;
+export default SwanAnimation;
