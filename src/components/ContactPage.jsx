@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbx4AqLhH011Svtbe8nLSu_tWtbE-pq2MqUmyEOLsNuPlE2eillBEIU1zIrczqhPs5RU/exec";
+  "https://script.google.com/macros/s/AKfycbxXvV3ejwNX417-f3hXOXTxiId5USWgafCAy8AnfYOpzTeggH1jWgKTOoMwtz-dwLE/exec";
 
 const next = [
   ["01", "We reply within 24 hours, with a yes, a no, or a question."],
