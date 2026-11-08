@@ -32,6 +32,10 @@ export default function BookingPage() {
   const [timing, setTiming] = useState("b");
   const [slot, setSlot] = useState("c");
   const [done, setDone] = useState(false);
+  const [formData, setFormData] = useState({ name: "", email: "", notes: "" });
+  const [sending, setSending] = useState(false);
+
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXvV3ejwNX417-f3hXOXTxiId5USWgafCAy8AnfYOpzTeggH1jWgKTOoMwtz-dwLE/exec";
 
   const dot = (n) => ({
     display: "grid", placeItems: "center", width: 28, height: 28, borderRadius: "50%", flex: "none",
@@ -39,6 +43,35 @@ export default function BookingPage() {
     color: step === n ? "var(--water)" : "var(--mist)",
     fontFamily: "var(--font-mono)", fontSize: 12,
   });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (sending) return;
+    setSending(true);
+
+    const body = new URLSearchParams({
+      name: formData.name,
+      email: formData.email,
+      subject: `Booking Request: ${PROJECTS.find((p) => p[0] === proj)[1]}`,
+      message: `Project: ${PROJECTS.find((p) => p[0] === proj)[1]}\nBudget: ${BUDGETS.find((b) => b[0] === budget)[1]}\nTiming: ${TIMINGS.find((t) => t[0] === timing)[1]}\nSlot: ${SLOT_LABELS[slot]}\n\nNotes:\n${formData.notes}`,
+      website: "",
+    });
+
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: body.toString(),
+      });
+
+      if (response.ok) {
+        setDone(true);
+      }
+    } catch (error) {
+      console.error("Booking submission failed:", error);
+    } finally {
+      setSending(false);
+    }
+  };
 
   const summary = [
     ["Project", PROJECTS.find((p) => p[0] === proj)[1]],
@@ -169,22 +202,48 @@ export default function BookingPage() {
                   You'll get a calendar invite with a short agenda, and a one-page prep note so the call isn't spent on
                   background.
                 </p>
-                <form style={{ maxWidth: 460 }} onSubmit={(e) => { e.preventDefault(); setDone(true); }}>
+                <form style={{ maxWidth: 460 }} onSubmit={handleSubmit}>
                   <div style={{ marginBottom: "1.1rem" }}>
                     <label className="field-label" htmlFor="b-name">Name</label>
-                    <input id="b-name" className="field-input" type="text" placeholder="Your name" required />
+                    <input 
+                      id="b-name" 
+                      className="field-input" 
+                      type="text" 
+                      placeholder="Your name" 
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required 
+                    />
                   </div>
                   <div style={{ marginBottom: "1.1rem" }}>
                     <label className="field-label" htmlFor="b-email">Work email</label>
-                    <input id="b-email" className="field-input" type="email" placeholder="you@company.com" required />
+                    <input 
+                      id="b-email" 
+                      className="field-input" 
+                      type="email" 
+                      placeholder="you@company.com" 
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required 
+                    />
                   </div>
                   <div style={{ marginBottom: "1.5rem" }}>
                     <label className="field-label" htmlFor="b-notes">Anything we should read first?</label>
-                    <textarea id="b-notes" className="field-input" rows={3} placeholder="A link to your deck, Figma file, or current app…" style={{ resize: "vertical" }} />
+                    <textarea 
+                      id="b-notes" 
+                      className="field-input" 
+                      rows={3} 
+                      placeholder="A link to your deck, Figma file, or current app…" 
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      style={{ resize: "vertical" }} 
+                    />
                   </div>
                   <div style={{ display: "flex", gap: "0.9rem", flexWrap: "wrap" }}>
                     <button type="button" className="btn btn-ghost" onClick={() => setStep(3)}>← Back</button>
-                    <button type="submit" className="btn btn-primary">Book the call</button>
+                    <button type="submit" className="btn btn-primary" disabled={sending} style={{ opacity: sending ? 0.65 : 1, cursor: sending ? "not-allowed" : "pointer" }}>
+                      {sending ? "Booking..." : "Book the call"}
+                    </button>
                   </div>
                   {done && (
                     <p role="status" style={{ color: "var(--leaf)", marginTop: "1rem", lineHeight: 1.6 }}>
