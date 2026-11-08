@@ -7,7 +7,6 @@ import ServicesPage from "./components/ServicesPage";
 import WorkPage from "./components/WorkPage";
 import PricingPage from "./components/PricingPage";
 import JournalPage from "./components/JournalPage";
-import ContactPage from "./components/ContactPage";
 import BookingPage from "./components/BookingPage";
 
 const PAGES = {
@@ -17,7 +16,6 @@ const PAGES = {
   work: WorkPage,
   pricing: PricingPage,
   journal: JournalPage,
-  contact: ContactPage,
   booking: BookingPage,
 };
 

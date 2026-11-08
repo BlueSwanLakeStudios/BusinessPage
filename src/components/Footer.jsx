@@ -2,7 +2,7 @@ import logo from "../assets/logo.png";
 
 const groups = [
   { title: "Pages", items: [["Work", "work"], ["Services", "services"], ["Pricing", "pricing"], ["Journal", "journal"]] },
-  { title: "Studio", items: [["About", "about"], ["Contact", "contact"], ["Book a call", "booking"]] },
+  { title: "Studio", items: [["About", "about"], ["Book a call", "booking"]] },
 ];
 
 export default function Footer({ go }) {
@@ -37,7 +37,7 @@ export default function Footer({ go }) {
               <p className="mono" style={{ opacity: 0.4, margin: "0 0 0.85rem" }}>Contact</p>
               <div style={{ display: "grid", gap: "0.55rem", fontSize: "0.85rem", opacity: 0.55 }}>
                 <a className="footer-link" href="mailto:support@blueswanlakestudios.com">support@blueswanlakestudios.com</a>
-                <span>+91 00000 00000</span>
+                <a className="footer-link" href="tel:+917799364363">+91 7799364363</a>
               </div>
             </div>
           </div>
