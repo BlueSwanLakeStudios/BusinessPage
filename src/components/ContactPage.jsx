@@ -23,14 +23,17 @@ export default function ContactPage({ go }) {
     const body = new URLSearchParams({ ...form, website: "" });
 
     try {
-      await fetch(SCRIPT_URL, {
+      const response = await fetch(SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: body.toString(),
       });
-      setForm({ name: "", email: "", subject: "", message: "" });
-      setStatus("success");
+      
+      if (response.ok) {
+        setForm({ name: "", email: "", subject: "", message: "" });
+        setStatus("success");
+      } else {
+        setStatus("error");
+      }
     } catch (error) {
       console.error("Contact form submission failed:", error);
       setStatus("error");
