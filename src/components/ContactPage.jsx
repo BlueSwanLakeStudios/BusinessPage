@@ -83,7 +83,7 @@ export default function ContactPage({ go }) {
           )}
           {status === "error" && (
             <p role="alert" style={{ color: "#ff9a9a", marginTop: "1rem", lineHeight: 1.6 }}>
-              The message could not be sent. Please try again, or email us directly at hello@blueswanlake.studio.
+              The message could not be sent. Please try again, or email us directly at support@blueswanlakestudios.com.
             </p>
           )}
         </form>
@@ -93,7 +93,7 @@ export default function ContactPage({ go }) {
         <div>
           <p className="eyebrow">Direct</p>
           <p style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem", color: "var(--mist-bright)", margin: "0 0 0.5rem" }}>
-            <a href="mailto:hello@blueswanlake.studio" style={{ color: "inherit", textDecoration: "none" }}>hello@blueswanlake.studio</a>
+            <a href="mailto:support@blueswanlakestudios.com" style={{ color: "inherit", textDecoration: "none" }}>support@blueswanlakestudios.com</a>
           </p>
           <p style={{ fontSize: "0.92rem", opacity: 0.55, margin: 0 }}>+91 00000 00000 · Mon–Fri, 10:00–19:00 IST</p>
         </div>
